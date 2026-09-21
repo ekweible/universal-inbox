@@ -440,7 +440,7 @@ async fn maybe_refill_current_page(
     api_base_url: &Url,
     notifications_page: Signal<Page<NotificationWithTask>>,
     notification_filters: Signal<NotificationFilters>,
-    mut ui_model: Signal<UniversalInboxUIModel>,
+    ui_model: Signal<UniversalInboxUIModel>,
 ) {
     let (per_page, pages_count, len) = {
         let page = notifications_page.read();
@@ -464,12 +464,6 @@ async fn maybe_refill_current_page(
         return;
     }
 
-    // Preserve the selected notification across the refetch by remembering its id.
-    let selected_id = ui_model
-        .read()
-        .selected_notification_index
-        .and_then(|index| notifications_page.read().content.get(index).map(|n| n.id));
-
     refresh_notifications(
         api_base_url,
         notifications_page,
@@ -477,16 +471,6 @@ async fn maybe_refill_current_page(
         ui_model,
     )
     .await;
-
-    if let Some(id) = selected_id
-        && let Some(index) = notifications_page
-            .read()
-            .content
-            .iter()
-            .position(|n| n.id == id)
-    {
-        ui_model.write().selected_notification_index = Some(index);
-    }
 }
 
 /// Build the status / snooze query parameters for a section's notification list.
@@ -511,7 +495,7 @@ async fn refresh_notifications(
     api_base_url: &Url,
     mut notifications_page: Signal<Page<NotificationWithTask>>,
     notification_filters: Signal<NotificationFilters>,
-    ui_model: Signal<UniversalInboxUIModel>,
+    mut ui_model: Signal<UniversalInboxUIModel>,
 ) {
     let source_filters: Vec<String> = notification_filters()
         .notification_source_kind_filters
@@ -540,7 +524,27 @@ async fn refresh_notifications(
     .await;
 
     if let Ok(new_notifications_page) = result {
+        // Resolve selection at response time: keyboard navigation can continue
+        // while the request is pending. Publish the page and its matching index
+        // together, before reactive effects can observe a mismatched identity.
+        let current_ids: Vec<_> = notifications_page
+            .peek()
+            .content
+            .iter()
+            .map(|n| n.id)
+            .collect();
+        let refreshed_ids: Vec<_> = new_notifications_page
+            .content
+            .iter()
+            .map(|n| n.id)
+            .collect();
+        let selected_index = super::list_selection::selection_after_refresh(
+            &current_ids,
+            ui_model.peek().selected_notification_index,
+            &refreshed_ids,
+        );
         *notifications_page.write() = new_notifications_page;
+        ui_model.write().selected_notification_index = selected_index;
     }
 }
 

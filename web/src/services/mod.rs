@@ -4,6 +4,7 @@ pub mod crisp;
 pub mod flyonui;
 pub mod headway;
 pub mod integration_connection_service;
+mod list_selection;
 pub mod local_storage;
 pub mod notification_service;
 pub mod oauth2_client_service;
