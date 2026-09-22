@@ -124,7 +124,8 @@ pub fn ListPaginationButtons<
 
     rsx! {
         nav {
-            class: "join",
+            class: "join items-center",
+            "aria-label": "Notification pages",
 
             Button {
                 variant: ButtonVariant::Icon,
