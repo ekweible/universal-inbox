@@ -133,6 +133,13 @@ impl JsonBody {
 }
 
 impl ApiClient {
+    pub fn with_middleware(mut self, middleware: impl reqwest_middleware::Middleware) -> Self {
+        self.client = ClientBuilder::from_client(self.client)
+            .with(middleware)
+            .build();
+        self
+    }
+
     pub fn build<Paths, Path>(
         default_headers: HeaderMap,
         known_paths: Paths,

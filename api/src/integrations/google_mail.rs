@@ -56,7 +56,7 @@ use crate::{
         UniversalInboxError, integration_connection::service::IntegrationConnectionService,
         notification::service::NotificationService,
     },
-    utils::api::ApiClient,
+    utils::{api::ApiClient, gmail_quota::GmailQuota},
 };
 
 #[derive(Clone)]
@@ -68,6 +68,7 @@ pub struct GoogleMailService {
     notification_service: Weak<RwLock<NotificationService>>,
     google_calendar_service: Arc<GoogleCalendarService>,
     max_retry_duration: Duration,
+    quota: GmailQuota,
 }
 
 static DEFAULT_SUBJECT: &str = "No subject";
@@ -210,6 +211,7 @@ impl GoogleMailService {
             notification_service,
             google_calendar_service,
             max_retry_duration,
+            quota: GmailQuota::new(max_retry_duration),
         })
     }
 
@@ -328,6 +330,7 @@ impl GoogleMailService {
             ],
             self.max_retry_duration,
         )
+        .map(|client| client.with_middleware(self.quota.clone()))
     }
 
     pub async fn get_user_profile(
@@ -724,6 +727,11 @@ impl ThirdPartyItemSourceService<GoogleMailThread> for GoogleMailService {
                     raw_google_mail_thread.into_google_mail_thread(user_email_address.clone()),
                 );
             }
+
+            tracing::info!(
+                fetched_threads = google_mail_threads.len(),
+                "Fetched Gmail sync page"
+            );
 
             if let Some(next_page_token) = google_mail_thread_list.next_page_token {
                 page_token = Some(next_page_token);
