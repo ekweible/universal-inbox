@@ -344,10 +344,28 @@ fn sanitize_email_html(html: &str) -> String {
 /// Dioxus' Callback machinery and panicked with `Dropped(ValueDroppedError)`.
 #[component]
 fn EmailBodyFrame(html: String) -> Element {
+    // Approval is bound to this exact body, so reusing the component for another
+    // message never briefly grants that message permission to load resources.
+    let mut approved_body = use_signal(|| None::<String>);
+    let allow_remote_images = approved_body.read().as_ref() == Some(&html);
+    let body_to_approve = html.clone();
     rsx! {
         div {
-            class: "ui-email-frame-host",
-            "data-html": "{html}",
+            class: "flex flex-col gap-1",
+            if !allow_remote_images {
+                button {
+                    r#type: "button",
+                    class: "self-start text-xs text-ui-base-muted hover:text-ui-primary underline py-2",
+                    title: "Loads images from the sender's servers for this message",
+                    onclick: move |_| approved_body.set(Some(body_to_approve.clone())),
+                    "Load remote images"
+                }
+            }
+            div {
+                class: "ui-email-frame-host",
+                "data-html": "{html}",
+                "data-remote-images": "{allow_remote_images}",
+            }
         }
     }
 }

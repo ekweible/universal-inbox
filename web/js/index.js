@@ -1,5 +1,3 @@
-import { Crisp } from "crisp-sdk-web";
-
 import "flyonui/dist/collapse";
 import "flyonui/dist/tabs";
 import "flyonui/dist/overlay";
@@ -21,16 +19,21 @@ export { flatpickr };
 // preference inside a light iframe. Do this before loading to avoid a flash.
 const EMAIL_FRAME_FOOT = "</body></html>";
 
-function buildEmailFrameHead() {
+function buildEmailFrameHead(allowRemoteImages = false) {
+    const imageSources = allowRemoteImages ? "data: https: http:" : "data:";
+    const policy = "default-src 'none'; script-src 'none'; style-src 'unsafe-inline'; " +
+        "img-src " + imageSources + "; font-src 'none'; connect-src 'none'; " +
+        "frame-src 'none'; object-src 'none'; media-src 'none'; " +
+        "base-uri 'none'; form-action 'none';";
     const textColor = "#0f172a";
     const surfaceColor = "#ffffff";
     const borderColor = "#e2e8f0";
     return (
         '<!doctype html><html><head><meta charset="utf-8">' +
+        '<meta http-equiv="Content-Security-Policy" content="' + policy + '">' +
+        '<meta name="referrer" content="no-referrer">' +
         '<meta name="color-scheme" content="only light"><base target="_blank">' +
         "<style>" +
-        "@font-face{font-family:'DM Sans';font-style:normal;font-weight:100 1000;" +
-        "font-display:swap;src:url('/fonts/DMSans-Regular.woff2') format('woff2');}" +
         "html{color-scheme:only light;}" +
         // The root paints the iframe canvas — its background covers the entire
         // scrollable area, including horizontal overflow. Filling it with the
@@ -80,7 +83,7 @@ function lightEmailHtml(html) {
 
 function buildEmailIframe(host) {
     const html = host.dataset.html || "";
-    const srcdoc = buildEmailFrameHead() + lightEmailHtml(html) + EMAIL_FRAME_FOOT;
+    const srcdoc = buildEmailFrameHead(host.dataset.remoteImages === "true") + lightEmailHtml(html) + EMAIL_FRAME_FOOT;
 
     // Re-render path: when Dioxus reuses the host div for a new notification,
     // it just rewrites `data-html`. Keep the existing iframe and swap its
@@ -211,7 +214,7 @@ if (typeof window !== "undefined" && typeof MutationObserver !== "undefined") {
             childList: true,
             subtree: true,
             attributes: true,
-            attributeFilter: ["data-html"],
+            attributeFilter: ["data-html", "data-remote-images"],
         });
     };
     if (document.readyState === "loading") {
@@ -333,117 +336,5 @@ export function forget_flyonui_tooltip_element(element) {
         window.$hsTooltipCollection = window.$hsTooltipCollection.filter(
             (el) => el?.element?.el !== element,
         );
-    }
-}
-
-export function init_headway() {
-    if (typeof Headway === "object") {
-        Headway.init({
-            selector: "#ui-changelog",
-            account: "7Xr08y",
-        });
-    }
-}
-
-export function show_headway() {
-    if (typeof Headway === "object") {
-        // Defer to the next tick so the click that triggered this finishes
-        // bubbling first. Headway attaches a document-level click handler to
-        // close the popin on outside clicks; opening synchronously from a click
-        // handler races that handler (it closes the popin we just opened, so it
-        // never appears). By the time this timeout fires, the click has settled
-        // and Headway's close handler has already run as a no-op.
-        setTimeout(() => {
-            try {
-                Headway.show();
-            } catch (e) {
-                console.warn("Failed to show Headway changelog:", e);
-            }
-        }, 0);
-    }
-}
-
-export function init_crisp(
-    website_id,
-    user_email,
-    user_email_signature,
-    user_nickname,
-    user_avatar,
-    user_id,
-) {
-    try {
-        Crisp.configure(website_id, {
-            autoload: false,
-            sessionMerge: true,
-        });
-        if (!!user_id) {
-            Crisp.setTokenId(user_id);
-        }
-        if (!!user_email) {
-            Crisp.user.setEmail(user_email, user_email_signature);
-        }
-        if (!!user_nickname) {
-            Crisp.user.setNickname(user_nickname);
-        }
-        if (!!user_avatar) {
-            Crisp.user.setAvatar(user_avatar);
-        }
-
-        Crisp.load();
-
-        if (!!user_id) {
-            Crisp.session.setData({
-                user_id: user_id,
-            });
-        }
-
-        // Hide Crisp's default floating launcher — it overlaps the notification
-        // preview pane's action buttons (bottom-right). The chat is opened from a
-        // dedicated "Support" button in the sidebar via `open_crisp_chat()`.
-        // Re-hide whenever the user closes the chat so no bubble lingers.
-        Crisp.chat.hide();
-        Crisp.chat.onChatClosed(() => {
-            Crisp.chat.hide();
-        });
-    } catch (e) {
-        console.warn("Failed to initialize Crisp chat:", e);
-    }
-}
-
-export function open_crisp_chat() {
-    if (typeof Crisp === "undefined") {
-        return;
-    }
-    // Defer to the next tick so the click that triggered this finishes bubbling
-    // first. Crisp closes the chat on outside clicks; opening synchronously from
-    // a click handler races that handler, which closes the chat we just opened
-    // (it flashes open then shut on the first click). By the time this timeout
-    // fires, the click has settled. The default launcher is hidden (see
-    // `init_crisp`), so show the widget then open the conversation window.
-    setTimeout(() => {
-        try {
-            Crisp.chat.show();
-            Crisp.chat.open();
-        } catch (e) {
-            console.warn("Failed to open Crisp chat:", e);
-        }
-    }, 0);
-}
-
-export function unload_crisp() {
-    try {
-        Crisp.setTokenId();
-        Crisp.session.reset();
-    } catch (e) {
-        console.warn("Failed to unload Crisp chat:", e);
-    }
-}
-
-export function is_crisp_chat_opened() {
-    try {
-        return Crisp.chat.isChatOpened();
-    } catch (e) {
-        console.warn("Failed to check Crisp chat state:", e);
-        return false;
     }
 }

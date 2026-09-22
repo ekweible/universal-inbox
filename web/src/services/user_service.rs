@@ -21,7 +21,7 @@ use universal_inbox::{
 
 use crate::{
     model::UniversalInboxUIModel,
-    services::{api::call_api, crisp::unload_crisp},
+    services::api::call_api,
     utils::{create_navigator_credentials, get_navigator_credentials, redirect_to},
 };
 
@@ -118,7 +118,6 @@ pub async fn user_service(
                 };
             }
             Some(UserCommand::Logout) => {
-                unload_crisp();
                 let result: Result<CloseSessionResponse> = call_api(
                     Method::DELETE,
                     &api_base_url,

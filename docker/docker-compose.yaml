@@ -2,7 +2,7 @@ name: "universal-inbox"
 
 services:
   universal-inbox-db:
-    image: "postgres:15"
+    image: "postgres:15@sha256:dfbbb0ad8cab91d41e99123664e37a9b25d0413426d4fb3154e4d668e5d35246"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U universal-inbox -d universal-inbox"]
       interval: 10s
@@ -15,16 +15,14 @@ services:
       - universal-inbox-db:/var/lib/postgresql/data
     env_file:
       - universal-inbox-db.env
-    ports:
-      - "5432:5432"
 
   universal-inbox-redis:
-    image: "redis:latest"
+    image: "redis:7-alpine@sha256:520775a41a63e77e06c73e35d2fd9cc15921a609516818796b4ecbb813078bc7"
     networks:
       - universal-inbox
 
   universal-inbox:
-    image: "dax42/universal-inbox:latest"
+    image: "${UNIVERSAL_INBOX_IMAGE:?Set UNIVERSAL_INBOX_IMAGE to a reviewed local image digest}"
     command: ["serve"]
     depends_on:
       universal-inbox-db:
@@ -32,25 +30,16 @@ services:
         restart: true
       universal-inbox-redis:
         condition: service_started
-    build:
-      context: ..
-      tags:
-        - dax42/universal-inbox:latest
-      labels:
-        org.opencontainers.image.title: "universal-inbox"
-        org.opencontainers.image.source: "https://github.com/universal-inbox/universal-inbox"
-        org.opencontainers.image.version: "0.1.0"
-        org.opencontainers.image.licenses: "Apache-2.0"
 
     networks:
       - universal-inbox
     env_file:
       - universal-inbox.env
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
 
   universal-inbox-worker:
-    image: "dax42/universal-inbox:latest"
+    image: "${UNIVERSAL_INBOX_IMAGE:?Set UNIVERSAL_INBOX_IMAGE to a reviewed local image digest}"
     command: ["start-workers"]
     depends_on:
       universal-inbox-db:

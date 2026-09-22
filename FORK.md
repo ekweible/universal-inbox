@@ -90,3 +90,26 @@ primary actions in one bottom bar. Secondary notification actions are labeled in
 More. The mobile detail title scrolls with content; the source header replaces the
 branding row, and integration status lives in the navigation drawer. Only the
 bottom bar owns its bottom safe-area inset. Desktop density is retained.
+
+## Private/work deployment defaults
+
+The fork omits Headway and Crisp widgets and their remote script/CSP permissions.
+Email frames block remote resources by default with their own CSP. **Load remote
+images** opts in for that message body only; sender image servers can then observe
+those requests. Opt-in is not anonymous: browser handling of CSS background
+images can include the app origin despite no-referrer policies. Remote stylesheets, fonts, scripts, frames, media and forms remain
+blocked. Ordinary links still open when clicked. OAuth/provider network access and
+other app images (such as avatars) are separate from email resource policy.
+
+`docker/docker-compose.yaml` publishes only `127.0.0.1:8000`; database and Redis
+have no host ports. Build the reviewed revision using the command above, inspect
+its image ID, and set `UNIVERSAL_INBOX_IMAGE=ekweible/universal-inbox@sha256:...`
+before starting Compose. Both app and worker use that same image. Database and
+Redis base images are pinned to digests; update those deliberately with validation.
+Use a deliberate local HTTPS proxy if needed. Do not expose database ports just
+to administer it: use `docker compose exec universal-inbox-db psql ...`.
+
+Keep work credentials, volumes and backups separate from the personal Studio.
+Leave optional OTLP exporters disabled unless approved for the target environment.
+This hardening does not implement individual session revocation or read-only
+provider permissions; those remain separate work-install decisions.

@@ -416,6 +416,12 @@ pub async fn run_server(
                         header::HeaderName::from_static("x-frame-options"),
                         header::HeaderValue::from_static("DENY"),
                     );
+                    // Include the parent policy: CSS image requests in srcdoc
+                    // may use it even when the frame has a no-referrer meta tag.
+                    res.headers_mut().insert(
+                        header::REFERRER_POLICY,
+                        header::HeaderValue::from_static("no-referrer"),
+                    );
                     // HSTS: force HTTPS-only for this host and all subdomains.
                     // Emitted on every response (browsers ignore it over
                     // plaintext, honor it over HTTPS). The `preload` directive
@@ -1042,14 +1048,7 @@ fn build_csp_header(settings: &Settings, script_hashes: &[String]) -> String {
     for url in settings.application.security.csp_extra_connect_src.iter() {
         connect_srcs.push_borrowed(Source::Host(url));
     }
-    connect_srcs = connect_srcs
-        .push(Source::Host("https://client.crisp.chat"))
-        .push(Source::Host("wss://client.relay.crisp.chat"));
-
-    let mut script_srcs = Sources::new_with(Source::Self_)
-        .push(Source::WasmUnsafeEval)
-        .push(Source::Host("https://client.crisp.chat"))
-        .push(Source::Host("https://cdn.headwayapp.co"));
+    let mut script_srcs = Sources::new_with(Source::Self_).push(Source::WasmUnsafeEval);
     // Allow each inline script in the served index.html (e.g. Trunk's WASM
     // bootstrap) by its SHA-256 hash instead of 'unsafe-inline'.
     for hash in script_hashes {
@@ -1060,9 +1059,7 @@ fn build_csp_header(settings: &Settings, script_hashes: &[String]) -> String {
         .push(Directive::DefaultSrc(Sources::new_with(Source::Self_)))
         .push(Directive::ScriptSrc(script_srcs))
         .push(Directive::StyleSrc(
-            Sources::new_with(Source::Self_)
-                .push(Source::UnsafeInline)
-                .push(Source::Host("https://client.crisp.chat")),
+            Sources::new_with(Source::Self_).push(Source::UnsafeInline),
         ))
         .push(Directive::ObjectSrc(Sources::new()))
         .push(Directive::ConnectSrc(connect_srcs))
@@ -1071,13 +1068,9 @@ fn build_csp_header(settings: &Settings, script_hashes: &[String]) -> String {
                 .push(Source::Self_)
                 .push(Source::Scheme("data")),
         ))
-        .push(Directive::FontSrc(
-            Sources::new_with(Source::Self_).push(Source::Host("https://client.crisp.chat")),
-        ))
+        .push(Directive::FontSrc(Sources::new_with(Source::Self_)))
         .push(Directive::WorkerSrc(Sources::new()))
-        .push(Directive::FrameSrc(
-            Sources::new_with(Source::Self_).push(Source::Host("https://headway-widget.net")),
-        ))
+        .push(Directive::FrameSrc(Sources::new_with(Source::Self_)))
         // Clickjacking defense: only the application
         // itself may embed its own pages. Modern browsers honor
         // `frame-ancestors`; the legacy `X-Frame-Options: DENY` header
