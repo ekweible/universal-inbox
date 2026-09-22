@@ -82,7 +82,7 @@ pub fn FullpageLayout() -> Element {
 
     rsx! {
         div {
-            class: "flex min-h-screen items-center justify-center bg-ui-base-200 relative p-6",
+            class: "flex min-h-dvh items-center justify-center bg-ui-base-200 relative p-6",
 
             if CONNECTED_USER.read().is_some() {
                 Tooltip {

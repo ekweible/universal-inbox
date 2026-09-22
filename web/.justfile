@@ -14,7 +14,7 @@ build:
 build-release:
     trunk build --release --features trunk
 
-build-assets: bundle-js build-tailwind bundle-fonts
+build-assets: bundle-js build-tailwind bundle-fonts bundle-pwa
 
 build-tailwind output-dir="public":
     mkdir -p {{ output-dir }}/css
@@ -33,6 +33,10 @@ clear-dev-assets:
     rm -rf public
 
 build-ci: install build-assets build
+
+bundle-pwa:
+    mkdir -p public
+    cp -R pwa public/
 
 ## Dev recipes
 check: install build-assets

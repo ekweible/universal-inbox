@@ -66,3 +66,24 @@ focused product fixes so those fixes can be proposed upstream independently.
 The inherited upstream CI includes upstream deployment assumptions. `studio` is
 not an upstream deployment trigger. Do not add production credentials to inherited
 workflows or push changes to the upstream remote.
+
+## Install and use on a phone
+
+The web manifest supplies stable app identity, standalone launch, and padded PNG
+icons for home screens. The iOS touch icon and status-bar metadata are included in
+both HTML entry points. Trunk copies `web/pwa/`; the Dioxus asset preparation also
+copies it into `web/public/pwa/`.
+
+- iPhone/iPad: open the inbox in Safari, use Share → Add to Home Screen, and enable
+  Open as Web App if that option appears.
+- Android/desktop Chromium: use the browser's Install app action.
+- The phone must be able to reach the Studio's tailnet address.
+
+This first version is online-only. There is no service worker, offline inbox copy,
+or background action queue. Installation does not change source-service actions
+or require new connector credentials. Modern installation uses the manifest and
+HTTPS; see [MDN's installability guide](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable).
+
+Mobile layouts account for safe-area insets, keep two lines of notification title,
+use larger shared action buttons and navigation links, and stack the detail action
+bar on narrow screens. Desktop density is retained.

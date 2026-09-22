@@ -68,7 +68,7 @@ use crate::route::Route;
 /// Base utility chain for a sidebar nav link (anchor or button). Pair with
 /// [`NAV_LINK_ACTIVE`] when the link represents the current route. Reacts to
 /// the parent `.sidebar.collapsed` state by collapsing to an icon-only layout.
-pub const NAV_LINK_BASE: &str = "group flex items-center gap-2 px-2.5 py-1.5 rounded-ui-md \
+pub const NAV_LINK_BASE: &str = "group flex items-center gap-2 px-2.5 py-1.5 max-lg:min-h-11 rounded-ui-md \
      text-sidebar-text text-sm cursor-pointer transition-all \
      hover:bg-sidebar-hover-bg hover:text-sidebar-text-bright \
      md:[.sidebar.collapsed_&]:justify-center md:[.sidebar.collapsed_&]:p-2";
