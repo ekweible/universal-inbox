@@ -95,7 +95,7 @@ pub fn NavBarLayout() -> Element {
                     }
                     main {
                         id: "main-content",
-                        class: "flex-1 min-h-0 overflow-hidden flex flex-col",
+                        class: "flex-1 min-h-0 overflow-hidden flex flex-col max-md:pb-[env(safe-area-inset-bottom)] max-md:[&:has(.list-panel)]:pb-0",
                         role: "main",
                         Outlet::<Route> {}
                     }
