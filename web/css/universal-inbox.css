@@ -1740,17 +1740,14 @@ select:focus-visible:not(.outline-none) {
    `<iframe>` it creates inside `.ui-email-frame-host` (see `web/js/index.js`).
    Without `width: 100%`, the iframe defaults to the HTML-spec `width: 300px`,
    which is the white-space-on-the-right bug. `border: 0` strips the default
-   iframe border; `color-scheme` lets the iframe pick up the parent theme so
-   unstyled emails read correctly in both light and dark modes. */
+   iframe border; `color-scheme` isolates email media queries from the app theme.
+   Sender colors render on a consistent light canvas in either app theme. */
 .ui-thread-msg-body .ui-email-frame {
     width: 100%;
     border: 0;
     display: block;
     background: transparent;
-    color-scheme: light;
-}
-[data-theme="dark"] .ui-thread-msg-body .ui-email-frame {
-    color-scheme: dark;
+    color-scheme: only light;
 }
 .ui-thread-msg-grouped > .ui-thread-msg-followup {
     padding-left: 38px;
