@@ -43,7 +43,7 @@ pub fn PreviewCardHeader(
                     class: "preview-head-title",
                     Markdown {
                         text: "{title}",
-                        class: "preview-head-title-text {title_class}",
+                        class: "preview-head-title-text {title_class} max-w-full max-md:whitespace-normal! max-md:[overflow-wrap:anywhere]",
                     }
                     if let Some(identifier) = identifier {
                         span { class: "preview-head-title-ext", "{identifier}" }
