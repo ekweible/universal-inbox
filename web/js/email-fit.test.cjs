@@ -1,0 +1,9 @@
+// Run with Playwright installed: node web/js/email-fit.test.cjs
+const {chromium,webkit}=require('playwright');const fs=require('fs');
+(async()=>{for(const engine of [chromium,webkit]){const b=await engine.launch();const page=await b.newPage({viewport:{width:390,height:844}});const src=fs.readFileSync(require('path').join(__dirname, 'index.js'),'utf8');const renderer=src.slice(src.indexOf('// Mount sandboxed'),src.indexOf('// Flyonui collapse'));
+await page.setContent('<style>.ui-email-frame-host{width:100%;min-height:80px}.ui-email-frame{display:block;border:0;width:100%;color-scheme:only light}</style><div class="ui-email-frame-host"></div>');
+await page.evaluate(()=>document.querySelector('div').dataset.html='<table style="width:640px;height:400px"><tr><td>Sentry</td><td style="text-align:right"><a id="edge" href="https://example.com">View issue</a></td></tr></table>');await page.addScriptTag({content:renderer});await page.waitForTimeout(500);
+const measure=()=>page.evaluate(()=>{const h=document.querySelector('div'),f=h.querySelector('iframe'),d=f.contentDocument;const r=f.getBoundingClientRect(),hr=h.getBoundingClientRect();return{width:r.width,host:hr.width,height:r.height,hostHeight:hr.height,scroll:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth}});
+for(const width of [390,320,600,1280,390]){await page.setViewportSize({width,height:844});await page.waitForTimeout(150);const m=await measure();if(m.width>m.host+1||Math.abs(m.height-m.hostHeight)>1)throw Error(JSON.stringify(m));if(width<768&&m.scroll>m.viewport+1)throw Error('Clipped content '+JSON.stringify(m));console.log(engine.name(),width,m)}
+await page.evaluate(()=>document.querySelector('div').dataset.html='<p>Short responsive replacement</p>');await page.waitForTimeout(200);const short=await measure();if(short.height>100)throw Error('Old height retained');
+await b.close();}})();

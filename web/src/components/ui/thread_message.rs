@@ -49,12 +49,34 @@ pub fn ThreadedMessage(
     body: Element,
     footer: Option<Element>,
     dimmed: Option<bool>,
+    #[props(default = false)] full_width_body: bool,
 ) -> Element {
     let dimmed = dimmed.unwrap_or(false);
     let row_class = if dimmed {
         "flex gap-2.5 py-1 opacity-60"
     } else {
         "flex gap-2.5 py-1"
+    };
+
+    let mobile_row = if full_width_body {
+        "max-md:grid max-md:grid-cols-[28px_minmax(0,1fr)] max-md:gap-y-1"
+    } else {
+        ""
+    };
+    let mobile_content = if full_width_body {
+        "max-md:contents"
+    } else {
+        ""
+    };
+    let mobile_header = if full_width_body {
+        "max-md:col-start-2"
+    } else {
+        ""
+    };
+    let mobile_body = if full_width_body {
+        "max-md:col-span-2 max-md:min-w-0 max-md:mt-1"
+    } else {
+        ""
     };
 
     let initials = get_initials_from_name(&author_name);
@@ -71,7 +93,7 @@ pub fn ThreadedMessage(
 
     rsx! {
         div {
-            class: "{row_class}",
+            class: "{row_class} {mobile_row}",
 
             ThreadedMessageAvatar {
                 initials: initials.clone(),
@@ -81,10 +103,10 @@ pub fn ThreadedMessage(
             }
 
             div {
-                class: "flex-1 min-w-0 flex flex-col gap-1",
+                class: "flex-1 min-w-0 flex flex-col gap-1 {mobile_content}",
 
                 div {
-                    class: "flex items-baseline gap-2 flex-wrap",
+                    class: "flex items-baseline gap-2 flex-wrap {mobile_header}",
                     span {
                         class: "font-semibold text-ui-base-content text-[11px]",
                         "{author_name}"
@@ -106,14 +128,14 @@ pub fn ThreadedMessage(
 
                 if let Some(metadata) = metadata {
                     div {
-                        class: "text-ui-base-muted text-[10px] flex gap-1 flex-wrap",
+                        class: "text-ui-base-muted text-[10px] flex gap-1 flex-wrap {mobile_header}",
                         {metadata}
                     }
                 }
 
                 // `.ui-thread-msg-body` is a kept class hook — see module doc.
                 div {
-                    class: "ui-thread-msg-body leading-[1.45] text-ui-base-content",
+                    class: "ui-thread-msg-body leading-[1.45] text-ui-base-content {mobile_body}",
                     {body}
                 }
 

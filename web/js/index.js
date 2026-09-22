@@ -100,31 +100,63 @@ function buildEmailIframe(host) {
         "sandbox",
         "allow-same-origin allow-popups allow-popups-to-escape-sandbox",
     );
+    iframe.setAttribute("title", "Email message");
     iframe.setAttribute("referrerpolicy", "no-referrer");
     iframe.setAttribute("loading", "lazy");
     iframe.srcdoc = srcdoc;
 
+    // Measure at the available width first so responsive emails can reflow.
+    // Fixed-width templates then get a fitted viewport rather than a clipped
+    // right edge. Scaling the iframe preserves sender layout and link targets.
+    host.style.position = "relative";
     const resize = () => {
+        if (!host.isConnected) return;
         try {
-            const root = iframe.contentDocument?.documentElement;
-            if (root) {
-                let height = root.scrollHeight;
-                // When the email overflows horizontally, a scrollbar sits at the
-                // bottom of the iframe viewport and would overlap the last rows of
-                // content (the iframe has no vertical scroll — its height tracks
-                // the content). Reserve the scrollbar's height so it clears the body.
-                if (root.scrollWidth > root.clientWidth) {
-                    const scrollbar =
-                        (iframe.contentWindow?.innerHeight ?? 0) - root.clientHeight;
-                    height += scrollbar > 0 ? scrollbar : 16;
+            const doc = iframe.contentDocument;
+            if (!doc?.body || !host.clientWidth) return;
+            const available = host.clientWidth;
+            iframe.style.position = "absolute";
+            iframe.style.transformOrigin = "top left";
+            iframe.style.transform = "none";
+            iframe.style.width = available + "px";
+            iframe.style.height = "1px";
+            let width = Math.max(available, doc.documentElement.scrollWidth, doc.body.scrollWidth);
+            const fit = window.matchMedia("(max-width: 767px)").matches;
+            if (fit) {
+                // A wider viewport can switch the sender's responsive layout.
+                for (let pass = 0; pass < 3; pass++) {
+                    iframe.style.width = width + "px";
+                    const measured = Math.max(width, doc.documentElement.scrollWidth, doc.body.scrollWidth);
+                    if (measured === width) break;
+                    width = measured;
                 }
-                iframe.style.height = height + "px";
+                iframe.style.width = width + "px";
             }
+            const scale = fit ? Math.min(1, available / width) : 1;
+            let height = Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight);
+            if (!fit && width > available) height += 16;
+            iframe.style.height = height + "px";
+            iframe.style.transform = `scale(${scale})`;
+            host.style.height = Math.ceil(height * scale) + "px";
         } catch (_) {
-            // Cross-origin frames or detached iframes — ignore.
+            // Detached document during navigation.
         }
     };
-
+    let pending = false;
+    const scheduleResize = () => {
+        if (pending) return;
+        pending = true;
+        requestAnimationFrame(() => { pending = false; resize(); });
+    };
+    let observedWidth = 0;
+    const observer = new ResizeObserver(() => {
+        if (host.clientWidth !== observedWidth) {
+            observedWidth = host.clientWidth;
+            scheduleResize();
+        }
+    });
+    observer.observe(host);
+    host.uiEmailCleanup = () => observer.disconnect();
     // Do NOT call `resize` synchronously after `appendChild`: at that point
     // the iframe still hosts an empty `about:blank` document (which already
     // reports `readyState === "complete"`), so measuring its `scrollHeight`
@@ -135,6 +167,9 @@ function buildEmailIframe(host) {
     // `appendChild`, so it cannot have already fired.
     iframe.addEventListener("load", () => {
         resize();
+        // Images and webfonts may change the document height after initial load.
+        iframe.contentDocument?.addEventListener("load", scheduleResize, true);
+        iframe.contentDocument?.fonts?.ready.then(scheduleResize);
     });
     host.appendChild(iframe);
 }
@@ -159,6 +194,11 @@ if (typeof window !== "undefined" && typeof MutationObserver !== "undefined") {
                     buildEmailIframe(r.target);
                 }
             } else {
+                r.removedNodes?.forEach((n) => {
+                    if (n.nodeType !== 1 || n.isConnected) return;
+                    n.uiEmailCleanup?.();
+                    n.querySelectorAll?.(".ui-email-frame-host").forEach((host) => host.uiEmailCleanup?.());
+                });
                 r.addedNodes?.forEach((n) => {
                     if (n.nodeType === 1) scan(n);
                 });

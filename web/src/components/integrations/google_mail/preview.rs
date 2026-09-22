@@ -162,6 +162,7 @@ fn GoogleMailThreadMessage(message: ReadSignal<GoogleMailMessage>) -> Element {
     rsx! {
         ThreadItem {
             ThreadedMessage {
+                full_width_body: true,
                 author_name: display_name,
                 author_subtitle: subtitle,
                 sent_at: Some(internal_date),
