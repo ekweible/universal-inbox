@@ -1,3 +1,4 @@
+import "./standalone-viewport.js";
 import "flyonui/dist/collapse";
 import "flyonui/dist/tabs";
 import "flyonui/dist/overlay";

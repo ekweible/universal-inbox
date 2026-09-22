@@ -35,7 +35,7 @@ pub fn NavBarLayout() -> Element {
 
     rsx! {
         div {
-            class: "ui-app-shell relative flex flex-col h-dvh overflow-hidden bg-ui-surface pt-[var(--ui-top-inset)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]",
+            class: "ui-app-shell relative flex flex-col h-[var(--ui-app-height,100dvh)] overflow-hidden bg-ui-surface pt-[var(--ui-top-inset)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]",
             a {
                 class: "skip-link",
                 href: "#main-content",

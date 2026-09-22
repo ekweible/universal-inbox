@@ -113,3 +113,13 @@ Keep work credentials, volumes and backups separate from the personal Studio.
 Leave optional OTLP exporters disabled unless approved for the target environment.
 This hardening does not implement individual session revocation or read-only
 provider permissions; those remain separate work-install decisions.
+
+## iOS standalone resume sizing
+
+The app shell uses a measured `innerHeight` on iOS standalone, refreshed after
+pageshow/visibility changes and viewport resize. Delayed measurements account for
+insets settling after resume. Accidental document scrolling is reset only outside
+text editing; nested inbox/email scroll positions remain intact. Pinch zoom does
+not change the shell measurement. Other browsers retain CSS dynamic viewport sizing.
+This is a mitigation for stale geometry on reopen, not a claim to fix WebKit's
+native iOS 27 viewport bug; quit/reopen verification on an affected phone is needed.
