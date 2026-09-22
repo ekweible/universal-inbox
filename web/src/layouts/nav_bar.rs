@@ -35,7 +35,7 @@ pub fn NavBarLayout() -> Element {
 
     rsx! {
         div {
-            class: "flex flex-col h-dvh overflow-hidden bg-ui-surface pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]",
+            class: "flex flex-col h-dvh overflow-hidden bg-ui-surface pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]",
             a {
                 class: "skip-link",
                 href: "#main-content",
@@ -76,7 +76,7 @@ pub fn NavBarLayout() -> Element {
                         // (<=768) prior to the tablet-drawer shift. Shell
                         // utilities below mirror the previous `.mobile-topbar`
                         // rule.
-                        class: "hidden max-lg:flex max-lg:items-center max-lg:gap-2.5 max-lg:h-12 max-lg:px-2.5 max-lg:bg-ui-surface max-lg:border-b max-lg:border-ui-border max-lg:flex-shrink-0",
+                        class: "hidden max-lg:flex max-lg:items-center max-lg:gap-2.5 max-lg:h-12 max-lg:px-2.5 max-lg:bg-ui-surface max-lg:border-b max-lg:border-ui-border max-lg:flex-shrink-0 max-md:[.app-layout.show-detail_&]:hidden!",
                         button {
                             // Hamburger: utility-only. No `::before`
                             // decoration so safe to drop the class hook.
@@ -94,11 +94,11 @@ pub fn NavBarLayout() -> Element {
                     }
                     main {
                         id: "main-content",
-                        class: "flex-1 min-h-0 overflow-hidden flex flex-col",
+                        class: "flex-1 min-h-0 overflow-hidden flex flex-col max-md:pb-[env(safe-area-inset-bottom)] max-md:[.app-layout.show-detail_&]:pb-0",
                         role: "main",
                         Outlet::<Route> {}
                     }
-                    Footer {}
+                    div { class: "max-md:hidden", Footer {} }
                 }
             }
             ToastZone {}

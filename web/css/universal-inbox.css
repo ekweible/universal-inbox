@@ -2044,3 +2044,43 @@ span.flatpickr-weekday,
     border: 2px solid var(--color-sidebar-bg);
     box-sizing: content-box;
 }
+
+/* Mobile owns one scroll surface, including the title. Provider preview roots
+   otherwise establish nested full-height scrollers for the desktop split pane. */
+@media (width < 768px) {
+    .mobile-detail-scroll {
+        overflow-y: auto;
+    }
+    .mobile-detail-scroll > div,
+    .mobile-detail-scroll > div > div {
+        flex: none;
+        height: auto;
+    }
+    .mobile-detail-scroll :is(#notification-preview-details, #task-preview-details) {
+        height: auto;
+        overflow: visible;
+        flex: none;
+        padding: 8px 0;
+    }
+    .mobile-detail-scroll .preview-head {
+        padding: 10px 4px;
+        align-items: flex-start;
+    }
+    /* Visible labels for reused icon buttons, including disabled actions. */
+    .mobile-more-actions button[aria-label] {
+        width: 100%;
+        justify-content: flex-start;
+        gap: 10px;
+        padding-inline: 10px;
+        border: 0;
+    }
+    .mobile-more-actions button[aria-label]::after {
+        content: attr(aria-label);
+        white-space: normal;
+        text-align: left;
+        font-size: 12px;
+    }
+    .mobile-more-actions .kbd {
+        display: none;
+    }
+}

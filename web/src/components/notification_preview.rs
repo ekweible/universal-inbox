@@ -62,7 +62,7 @@ pub(crate) const DETAIL_BODY_INNER: &str = "flex-1 min-h-0 mx-auto w-full max-w-
 pub(crate) const SOURCE_PILL_TILE: &str = "inline-flex size-5 items-center justify-center rounded-ui-sm bg-ui-surface border border-ui-border shrink-0 [&>*]:size-3! [&>*]:text-[12px]!";
 
 // Sub-label inside a source pill (e.g. "· Pull request"). Was `.sub` in CSS.
-pub(crate) const SOURCE_PILL_SUB: &str = "font-medium text-ui-base-muted ml-0.5";
+pub(crate) const SOURCE_PILL_SUB: &str = "font-medium text-ui-base-muted ml-0.5 max-md:hidden";
 
 // Small monospace badge for keyboard shortcut hints (e.g. "e", "tab") in the
 // detail header / dock action clusters. Was `.detail-kbd` in CSS.
@@ -115,6 +115,7 @@ pub fn NotificationPreview(
             };
             ui_model.preview_cards_expanded = false;
             *latest_shown_notification_id = Some(notification().id);
+            let _ = reset_scroll_top("detail-scroll");
             let _ = reset_scroll_top("notification-preview-details");
         }
     });
@@ -161,7 +162,7 @@ pub fn NotificationPreview(
     rsx! {
         // Detail header: back button (mobile) + tabs on the left, actions on the right
         div {
-            class: "py-1.5 px-5 bg-ui-surface border-b border-ui-border flex items-center justify-between gap-2 shrink-0",
+            class: "py-1.5 px-5 max-md:px-2 bg-ui-surface border-b border-ui-border flex items-center justify-between gap-2 shrink-0",
 
                 // Back button for mobile — first on the left, only visible
                 // on mobile in detail view. Baseline `hidden` keeps it off;
@@ -256,7 +257,8 @@ pub fn NotificationPreview(
             }
 
             div {
-                class: "flex-1 overflow-hidden py-3 px-5 min-h-0 flex flex-col animate-[detail-fade_0.2s_var(--ui-ease-out)]",
+                id: "detail-scroll",
+            class: "mobile-detail-scroll flex-1 overflow-hidden py-3 px-5 max-md:px-2 max-md:py-1 min-h-0 flex flex-col animate-[detail-fade_0.2s_var(--ui-ease-out)]",
 
                 if let Some(label) = snoozed_until_label.clone() {
                     div {
@@ -294,10 +296,10 @@ pub fn NotificationPreview(
 
             // Detail dock: bottom action bar
             div {
-                class: "py-1.5 px-5 bg-ui-surface border-t border-ui-border flex items-center justify-between shrink-0 max-md:flex-col max-md:items-stretch max-md:gap-1 max-md:px-3",
+                class: "py-1.5 px-5 bg-ui-surface border-t border-ui-border flex items-center justify-between shrink-0 max-md:px-2 max-md:pb-[max(0.375rem,env(safe-area-inset-bottom))]",
 
                 div {
-                    class: "inline-flex items-center gap-1 text-ui-base-muted max-md:justify-between",
+                    class: "inline-flex items-center gap-1 text-ui-base-muted",
                     Button {
                         variant: ButtonVariant::Icon,
                         disabled: previous_button_style == "disabled",
@@ -324,13 +326,8 @@ pub fn NotificationPreview(
                 }
 
                 div {
-                    class: "flex items-center gap-1.5 min-w-0 max-md:justify-center max-md:flex-wrap",
-                    for btn in get_notification_action_buttons(
-                        notification,
-                        shortcut_visibility_style == "visible",
-                        CURRENT_NOTIFICATION_SECTION()) {
-                        { btn }
-                    }
+                    class: "flex items-center gap-1.5 min-w-0 max-md:gap-0",
+                    NotificationDockActions { notification, show_shortcut: shortcut_visibility_style == "visible" }
                 }
             }
     }
@@ -537,23 +534,21 @@ fn snooze_or_unsnooze_button(
     }
 }
 
-pub fn get_notification_action_buttons(
+fn get_notification_actions(
     notification: ReadSignal<NotificationWithTask>,
     show_shortcut: bool,
     section: NotificationSection,
-) -> Vec<Element> {
+) -> Vec<(bool, Element)> {
     let context = use_context::<Memo<NotificationListContext>>();
 
     if !notification().is_built_from_task() {
-        let mut buttons = vec![delete_or_undelete_button(
-            notification,
-            show_shortcut,
-            section,
-            context,
+        let mut buttons = vec![(
+            true,
+            delete_or_undelete_button(notification, show_shortcut, section, context),
         )];
 
         if notification().task.is_some() {
-            buttons.push(rsx! {
+            buttons.push((false, rsx! {
                 ActionButton {
                     title: "Complete task",
                     shortcut: "c",
@@ -566,10 +561,10 @@ pub fn get_notification_action_buttons(
                     },
                     icon_class: "icon-[lucide--check-circle]"
                 }
-            });
+            }));
         }
 
-        buttons.push(rsx! {
+        buttons.push((false, rsx! {
             ActionButton {
                 title: "Unsubscribe from the notification",
                 shortcut: "u",
@@ -579,29 +574,30 @@ pub fn get_notification_action_buttons(
                 },
                 icon_class: "icon-[lucide--bell-off]"
             }
-        });
+        }));
 
-        buttons.push(snooze_or_unsnooze_button(
-            notification,
-            show_shortcut,
-            section,
-            context,
+        buttons.push((
+            true,
+            snooze_or_unsnooze_button(notification, show_shortcut, section, context),
         ));
 
         if notification().task.is_none() {
-            buttons.push(rsx! {
-                ActionButton {
-                    title: "Create task",
-                    shortcut: "p",
-                    disabled_label: (!context().is_task_actions_enabled)
-                        .then_some("No task management service connected".to_string()),
-                    show_shortcut,
-                    data_overlay: "#task-planning-modal",
-                    icon_class: "icon-[lucide--list-plus]"
-                }
-            });
+            buttons.push((
+                false,
+                rsx! {
+                    ActionButton {
+                        title: "Create task",
+                        shortcut: "p",
+                        disabled_label: (!context().is_task_actions_enabled)
+                            .then_some("No task management service connected".to_string()),
+                        show_shortcut,
+                        data_overlay: "#task-planning-modal",
+                        icon_class: "icon-[lucide--list-plus]"
+                    }
+                },
+            ));
 
-            buttons.push(rsx! {
+            buttons.push((false, rsx! {
                 ActionButton {
                     title: "Create task with defaults",
                     shortcut: "t",
@@ -613,19 +609,22 @@ pub fn get_notification_action_buttons(
                     },
                     icon_class: "icon-[lucide--zap]"
                 }
-            });
+            }));
 
-            buttons.push(rsx! {
-                ActionButton {
-                    title: "Link to task",
-                    shortcut: "l",
-                    disabled_label: (!context().is_task_actions_enabled)
-                        .then_some("No task management service connected".to_string()),
-                    show_shortcut,
-                    data_overlay: "#task-linking-modal",
-                    icon_class: "icon-[lucide--link]"
-                }
-            });
+            buttons.push((
+                false,
+                rsx! {
+                    ActionButton {
+                        title: "Link to task",
+                        shortcut: "l",
+                        disabled_label: (!context().is_task_actions_enabled)
+                            .then_some("No task management service connected".to_string()),
+                        show_shortcut,
+                        data_overlay: "#task-linking-modal",
+                        icon_class: "icon-[lucide--link]"
+                    }
+                },
+            ));
         }
 
         buttons
@@ -662,46 +661,84 @@ pub fn get_notification_action_buttons(
         };
 
         vec![
-            first_button,
-            rsx! {
-                ActionButton {
-                    title: "Complete task",
-                    shortcut: "c",
-                    disabled_label: (!context().is_task_actions_enabled)
-                        .then_some("No task management service connected".to_string()),
-                    show_shortcut,
-                    onclick: move |_| {
-                        context().notification_service
-                            .send(NotificationCommand::CompleteTaskFromNotification(notification()));
-                    },
-                    icon_class: "icon-[lucide--check-circle]"
-                }
-            },
-            snooze_or_unsnooze_button(notification, show_shortcut, section, context),
-            rsx! {
-                ActionButton {
-                    title: "Plan task",
-                    shortcut: "p",
-                    disabled_label: (!context().is_task_actions_enabled)
-                        .then_some("No task management service connected".to_string()),
-                    show_shortcut,
-                    data_overlay: "#task-planning-modal",
-                    icon_class: "icon-[lucide--calendar-check]"
-                }
-            },
-            rsx! {
-                ActionButton {
-                    title: "Create task with defaults",
-                    shortcut: "t",
-                    disabled_label: (!context().is_task_actions_enabled)
-                        .then_some("No task management service connected".to_string()),
-                    show_shortcut,
-                    onclick: move |_| {
-                        context().notification_service.send(NotificationCommand::CreateTaskWithDetaultsFromNotification(notification()));
-                    },
-                    icon_class: "icon-[lucide--zap]"
-                }
-            },
+            (false, first_button),
+            (
+                true,
+                rsx! {
+                    ActionButton {
+                        title: "Complete task",
+                        shortcut: "c",
+                        disabled_label: (!context().is_task_actions_enabled)
+                            .then_some("No task management service connected".to_string()),
+                        show_shortcut,
+                        onclick: move |_| {
+                            context().notification_service
+                                .send(NotificationCommand::CompleteTaskFromNotification(notification()));
+                        },
+                        icon_class: "icon-[lucide--check-circle]"
+                    }
+                },
+            ),
+            (
+                true,
+                snooze_or_unsnooze_button(notification, show_shortcut, section, context),
+            ),
+            (
+                false,
+                rsx! {
+                    ActionButton {
+                        title: "Plan task",
+                        shortcut: "p",
+                        disabled_label: (!context().is_task_actions_enabled)
+                            .then_some("No task management service connected".to_string()),
+                        show_shortcut,
+                        data_overlay: "#task-planning-modal",
+                        icon_class: "icon-[lucide--calendar-check]"
+                    }
+                },
+            ),
+            (
+                false,
+                rsx! {
+                    ActionButton {
+                        title: "Create task with defaults",
+                        shortcut: "t",
+                        disabled_label: (!context().is_task_actions_enabled)
+                            .then_some("No task management service connected".to_string()),
+                        show_shortcut,
+                        onclick: move |_| {
+                            context().notification_service.send(NotificationCommand::CreateTaskWithDetaultsFromNotification(notification()));
+                        },
+                        icon_class: "icon-[lucide--zap]"
+                    }
+                },
+            ),
         ]
+    }
+}
+
+#[component]
+fn NotificationDockActions(
+    notification: ReadSignal<NotificationWithTask>,
+    show_shortcut: bool,
+) -> Element {
+    let actions =
+        get_notification_actions(notification, show_shortcut, CURRENT_NOTIFICATION_SECTION());
+    let primary = actions
+        .iter()
+        .filter(|(primary, _)| *primary)
+        .map(|(_, button)| button.clone())
+        .collect::<Vec<_>>();
+    let secondary = actions
+        .iter()
+        .filter(|(primary, _)| !*primary)
+        .map(|(_, button)| button.clone())
+        .collect::<Vec<_>>();
+    rsx! {
+        div { class: "flex items-center gap-1.5 max-md:hidden", for (_, button) in actions { {button} } }
+        div { class: "hidden max-md:flex items-center",
+            for button in primary { {button} }
+            crate::components::mobile_more_actions::MobileMoreActions { key: "{notification().id}", actions: secondary }
+        }
     }
 }

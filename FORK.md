@@ -85,5 +85,8 @@ or require new connector credentials. Modern installation uses the manifest and
 HTTPS; see [MDN's installability guide](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable).
 
 Mobile layouts account for safe-area insets, keep two lines of notification title,
-use larger shared action buttons and navigation links, and stack the detail action
-bar on narrow screens. Desktop density is retained.
+use 44px action targets and navigation links, and combine detail navigation with
+primary actions in one bottom bar. Secondary notification actions are labeled in
+More. The mobile detail title scrolls with content; the source header replaces the
+branding row, and integration status lives in the navigation drawer. Only the
+bottom bar owns its bottom safe-area inset. Desktop density is retained.

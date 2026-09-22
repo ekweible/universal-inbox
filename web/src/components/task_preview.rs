@@ -59,6 +59,7 @@ pub fn TaskPreview(
         let mut latest = latest_shown_task_id.write();
         if *latest != Some(task().id) {
             *latest = Some(task().id);
+            let _ = reset_scroll_top("detail-scroll");
             let _ = reset_scroll_top("task-preview-details");
         }
     });
@@ -68,7 +69,7 @@ pub fn TaskPreview(
     rsx! {
         // Detail header: back button (mobile) + tab on the left, actions on the right
         div {
-            class: "py-1.5 px-5 bg-ui-surface border-b border-ui-border flex items-center justify-between gap-2 shrink-0",
+            class: "py-1.5 px-5 max-md:px-2 bg-ui-surface border-b border-ui-border flex items-center justify-between gap-2 shrink-0",
 
             // Back button for mobile — baseline `hidden`,
             // `max-md:[.app-layout.show-detail_&]:inline-flex!` reveals it on
@@ -117,7 +118,8 @@ pub fn TaskPreview(
         }
 
         div {
-            class: "flex-1 overflow-hidden py-3 px-5 min-h-0 flex flex-col animate-[detail-fade_0.2s_var(--ui-ease-out)]",
+            id: "detail-scroll",
+            class: "mobile-detail-scroll flex-1 overflow-hidden py-3 px-5 max-md:px-2 max-md:py-1 min-h-0 flex flex-col animate-[detail-fade_0.2s_var(--ui-ease-out)]",
             div {
                 class: DETAIL_BODY_INNER,
                 TaskDetailsPreview { task, expand_details }
@@ -126,10 +128,10 @@ pub fn TaskPreview(
 
         // Detail dock: bottom action bar
         div {
-            class: "py-1.5 px-5 bg-ui-surface border-t border-ui-border flex items-center justify-between shrink-0 max-md:flex-col max-md:items-stretch max-md:gap-1 max-md:px-3",
+            class: "py-1.5 px-5 bg-ui-surface border-t border-ui-border flex items-center justify-between shrink-0 max-md:px-2 max-md:pb-[max(0.375rem,env(safe-area-inset-bottom))]",
 
             div {
-                class: "inline-flex items-center gap-1 text-ui-base-muted max-md:justify-between",
+                class: "inline-flex items-center gap-1 text-ui-base-muted",
                 Button {
                     variant: ButtonVariant::Icon,
                     disabled: is_first,
@@ -156,7 +158,7 @@ pub fn TaskPreview(
             }
 
             div {
-                class: "flex items-center gap-1.5 min-w-0 max-md:justify-center max-md:flex-wrap",
+                class: "flex items-center gap-1.5 min-w-0 max-md:gap-0",
                 for btn in get_task_action_buttons(
                     task,
                     shortcut_visibility_style == "visible") {

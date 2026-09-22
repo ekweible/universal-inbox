@@ -7,6 +7,7 @@ use gravatar_rs::Generator;
 use crate::{
     components::{
         flyonui::tooltip::{Tooltip, TooltipPlacement},
+        footer::IntegrationConnectionsStatus,
         ui::{
             Badge, BadgeVariant, NavItem, NavSection,
             nav_item::{NAV_ICON_BASE, NAV_LINK_ACTIVE, NAV_LINK_BASE},
@@ -20,6 +21,7 @@ use crate::{
     services::{
         crisp::{init_crisp, open_crisp_chat},
         headway::{init_headway, show_headway},
+        integration_connection_service::INTEGRATION_CONNECTIONS,
         notification_service::{
             CURRENT_NOTIFICATION_SECTION, INBOX_COUNT, NotificationSection, SNOOZED_COUNT,
         },
@@ -290,6 +292,16 @@ pub fn Sidebar() -> Element {
                             label: "Security".to_string(),
                             to: Route::SecurityPage {},
                         }
+                    }
+                }
+            }
+
+            div { class: "hidden max-md:flex flex-col gap-3 p-3 border-t border-sidebar-border",
+                Link { to: Route::SettingsPage {}, class: "text-xs text-sidebar-text-muted", "Integration status" }
+                if let (Some(connections), Some(config)) = (INTEGRATION_CONNECTIONS(), APP_CONFIG()) {
+                    IntegrationConnectionsStatus {
+                        integration_connections: connections,
+                        integration_providers: config.integration_providers,
                     }
                 }
             }
