@@ -41,6 +41,7 @@ pub fn NavBarLayout() -> Element {
                 href: "#main-content",
                 "Skip to content"
             }
+            ToastZone {}
             if let Some(ref backend_version) = *version_mismatch {
                 div {
                     class: "w-full bg-warning text-warning-content px-4 py-2 text-center text-sm flex items-center justify-center gap-2",
@@ -101,7 +102,6 @@ pub fn NavBarLayout() -> Element {
                     div { class: "max-md:hidden", Footer {} }
                 }
             }
-            ToastZone {}
         }
     }
 }

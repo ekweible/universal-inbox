@@ -48,7 +48,7 @@ pub fn ToastZone() -> Element {
 
     rsx! {
         div {
-            class: "notyf max-lg:justify-start! lg:justify-end!",
+            class: "notyf ui-toast-zone lg:justify-end!",
 
             for (id, toast) in TOASTS() {
                 ToastElement {
@@ -114,8 +114,10 @@ fn ToastElement(
 
     rsx! {
         div {
-            id: "toast-element",
-            class: "notyf__toast notyf__toast--dismissible notyf__toast--lower max-w-md! {dismiss} {toast_style}",
+            role: if kind() == ToastKind::Failure { "alert" } else { "status" },
+            "aria-atomic": "true",
+            "data-dismissing": "{dismissing()}",
+            class: "notyf__toast notyf__toast--dismissible notyf__toast--lower lg:max-w-md! {dismiss} {toast_style}",
 
             div {
                 class: "notyf__wrapper",
@@ -152,6 +154,7 @@ fn ToastElement(
                     class: "notyf__dismiss",
                     button {
                         "type": "button",
+                        "aria-label": "Dismiss notification",
                         class: "notyf__dismiss-btn",
                         onclick: move |_| {
                             spawn({

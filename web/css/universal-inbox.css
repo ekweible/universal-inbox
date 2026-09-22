@@ -2084,3 +2084,59 @@ span.flatpickr-weekday,
         display: none;
     }
 }
+
+/* KEEP_CUSTOM: mobile overrides for the vendor Notyf descendant selectors.
+   In-flow status strip inherits the shell safe-area padding and never overlays
+   navigation or bottom actions. Desktop keeps the floating toast stack. */
+@media (width < 1024px) {
+    .ui-toast-zone.notyf {
+        position: static;
+        height: auto;
+        padding: 0;
+        flex-shrink: 0;
+        z-index: auto;
+    }
+    .ui-toast-zone .notyf__toast {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        border-radius: 0;
+        box-shadow: none;
+        border-bottom: 1px solid var(--ui-border);
+        background: var(--ui-surface-alt) !important;
+        color: var(--ui-base-content);
+        animation: none !important;
+        transform: none;
+    }
+    .ui-toast-zone .notyf__toast[data-dismissing="true"],
+    .ui-toast-zone .notyf__toast--disappear { display: none; }
+    .ui-toast-zone .notyf__wrapper {
+        min-height: 44px;
+        padding: 6px 48px 6px 12px;
+    }
+    .ui-toast-zone .notyf__message {
+        max-height: 4.5em;
+        overflow: auto;
+        overflow-wrap: anywhere;
+        font-size: var(--ui-text-md) !important;
+        margin: 0;
+    }
+    .ui-toast-zone .notyf__icon,
+    .ui-toast-zone .notyf__message,
+    .ui-toast-zone .notyf__dismiss {
+        animation: none !important;
+        opacity: 1;
+        transform: none;
+    }
+    .ui-toast-zone .notyf__icon { box-shadow: none; }
+    .ui-toast-zone .notyf__dismiss { width: 44px; }
+    .ui-toast-zone .notyf__dismiss-btn {
+        background: transparent;
+        opacity: 1 !important;
+    }
+    .ui-toast-zone .notyf__dismiss-btn::before,
+    .ui-toast-zone .notyf__dismiss-btn::after {
+        background: var(--ui-base-muted);
+    }
+    .ui-toast-zone .notyf__ripple { display: none; }
+}
