@@ -35,7 +35,7 @@ pub fn NavBarLayout() -> Element {
 
     rsx! {
         div {
-            class: "flex flex-col h-dvh overflow-hidden bg-ui-surface pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]",
+            class: "ui-app-shell relative flex flex-col h-dvh overflow-hidden bg-ui-surface pt-[var(--ui-top-inset)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]",
             a {
                 class: "skip-link",
                 href: "#main-content",
@@ -95,7 +95,7 @@ pub fn NavBarLayout() -> Element {
                     }
                     main {
                         id: "main-content",
-                        class: "flex-1 min-h-0 overflow-hidden flex flex-col max-md:pb-[env(safe-area-inset-bottom)] max-md:[.app-layout.show-detail_&]:pb-0",
+                        class: "flex-1 min-h-0 overflow-hidden flex flex-col",
                         role: "main",
                         Outlet::<Route> {}
                     }

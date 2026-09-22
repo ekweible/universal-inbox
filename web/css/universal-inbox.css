@@ -2086,15 +2086,18 @@ span.flatpickr-weekday,
 }
 
 /* KEEP_CUSTOM: mobile overrides for the vendor Notyf descendant selectors.
-   In-flow status strip inherits the shell safe-area padding and never overlays
-   navigation or bottom actions. Desktop keeps the floating toast stack. */
+   Mobile messages occupy the existing header center without changing layout.
+   Back/menu and open-source buttons stay exposed. Desktop keeps its stack. */
 @media (width < 1024px) {
     .ui-toast-zone.notyf {
-        position: static;
-        height: auto;
+        position: absolute;
+        top: calc(var(--ui-top-inset) + 2px);
+        left: calc(env(safe-area-inset-left) + 56px);
+        right: calc(env(safe-area-inset-right) + 56px);
+        width: auto;
+        height: 44px;
         padding: 0;
-        flex-shrink: 0;
-        z-index: auto;
+        z-index: 30;
     }
     .ui-toast-zone .notyf__toast {
         width: 100% !important;
@@ -2102,8 +2105,7 @@ span.flatpickr-weekday,
         margin: 0 !important;
         border-radius: 0;
         box-shadow: none;
-        border-bottom: 1px solid var(--ui-border);
-        background: var(--ui-surface-alt) !important;
+        background: var(--ui-surface) !important;
         color: var(--ui-base-content);
         animation: none !important;
         transform: none;
@@ -2111,14 +2113,15 @@ span.flatpickr-weekday,
     .ui-toast-zone .notyf__toast[data-dismissing="true"],
     .ui-toast-zone .notyf__toast--disappear { display: none; }
     .ui-toast-zone .notyf__wrapper {
-        min-height: 44px;
-        padding: 6px 48px 6px 12px;
+        height: 44px;
+        padding: 0 44px 0 4px;
     }
     .ui-toast-zone .notyf__message {
-        max-height: 4.5em;
+        max-height: 32px;
+        line-height: 16px;
         overflow: auto;
         overflow-wrap: anywhere;
-        font-size: var(--ui-text-md) !important;
+        font-size: var(--ui-text-base) !important;
         margin: 0;
     }
     .ui-toast-zone .notyf__icon,
@@ -2128,7 +2131,8 @@ span.flatpickr-weekday,
         opacity: 1;
         transform: none;
     }
-    .ui-toast-zone .notyf__icon { box-shadow: none; }
+    .ui-toast-zone .notyf__icon { box-shadow: none; width: 20px; height: 20px; margin-right: 6px !important; }
+    .ui-toast-zone .notyf__icon .loading { width: 18px; }
     .ui-toast-zone .notyf__dismiss { width: 44px; }
     .ui-toast-zone .notyf__dismiss-btn {
         background: transparent;
@@ -2139,4 +2143,22 @@ span.flatpickr-weekday,
         background: var(--ui-base-muted);
     }
     .ui-toast-zone .notyf__ripple { display: none; }
+}
+
+/* Shared positioning keeps the header and its transient message aligned. */
+:root { --ui-top-inset: env(safe-area-inset-top, 0px); }
+/* iOS standalone can blur beyond its reported top inset. Reserve a small,
+   stable clearance rather than shifting content whenever a message arrives. */
+@supports (-webkit-touch-callout: none) {
+    @media (display-mode: standalone) and (width < 1024px) {
+        :root { --ui-top-inset: calc(env(safe-area-inset-top, 0px) + 16px); }
+    }
+}
+@media (width < 768px) {
+    /* The viewport extends under the home indicator; only the end of the
+       scrollable content is padded, so the final row can clear it completely. */
+    .notification-list {
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+        scroll-padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+    }
 }
