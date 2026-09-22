@@ -114,6 +114,7 @@ fn compose_class(
     let size_cls = size.size_classes(variant);
     let mut out = String::with_capacity(base.len() + size_cls.len() + 24);
     out.push_str(base);
+    out.push_str(" max-md:min-h-11! max-md:min-w-11! touch-manipulation");
     if !size_cls.is_empty() {
         out.push(' ');
         out.push_str(size_cls);

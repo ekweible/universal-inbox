@@ -170,7 +170,7 @@ pub fn NotificationPreview(
                 // The `!` (`!important` in Tailwind v4) wins against `hidden`.
                 Button {
                     variant: ButtonVariant::Ghost,
-                    class: "hidden max-md:[.app-layout.show-detail_&]:inline-flex!".to_string(),
+                    class: "hidden max-md:[.app-layout.show-detail_&]:inline-flex! shrink-0".to_string(),
                     aria_label: "Back to list".to_string(),
                     title: "Back to list".to_string(),
                     onclick: move |_| ui_model.write().selected_notification_index = None,
@@ -294,10 +294,10 @@ pub fn NotificationPreview(
 
             // Detail dock: bottom action bar
             div {
-                class: "py-1.5 px-5 bg-ui-surface border-t border-ui-border flex items-center justify-between shrink-0",
+                class: "py-1.5 px-5 bg-ui-surface border-t border-ui-border flex items-center justify-between shrink-0 max-md:flex-col max-md:items-stretch max-md:gap-1 max-md:px-3",
 
                 div {
-                    class: "inline-flex items-center gap-1 text-ui-base-muted",
+                    class: "inline-flex items-center gap-1 text-ui-base-muted max-md:justify-between",
                     Button {
                         variant: ButtonVariant::Icon,
                         disabled: previous_button_style == "disabled",
@@ -324,7 +324,7 @@ pub fn NotificationPreview(
                 }
 
                 div {
-                    class: "flex items-center gap-1.5 min-w-0",
+                    class: "flex items-center gap-1.5 min-w-0 max-md:justify-center max-md:flex-wrap",
                     for btn in get_notification_action_buttons(
                         notification,
                         shortcut_visibility_style == "visible",

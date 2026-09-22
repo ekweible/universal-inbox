@@ -48,7 +48,7 @@ pub fn ListItem(
 
     rsx! {
         div {
-            class: "ui-nrow {selected_class} {unread_class} snap-start max-md:py-2.5 max-md:px-3.5",
+            class: "ui-nrow {selected_class} {unread_class} snap-start max-md:py-3! max-md:px-3.5! max-md:min-h-16 touch-manipulation",
             "data-provider": provider,
             "data-kind": data_kind,
             onclick: move |_| {
@@ -75,9 +75,9 @@ pub fn ListItem(
                 class: "ui-nrow-body",
 
                 div {
-                    class: "ui-nrow-title-row",
+                    class: "ui-nrow-title-row max-md:items-start! max-md:gap-2!",
                     span {
-                        class: "{title_class} max-md:text-sm",
+                        class: "{title_class} max-md:text-sm! max-md:whitespace-normal! max-md:line-clamp-2 max-md:[&_p]:inline max-md:[overflow-wrap:anywhere]",
                         Markdown { text: "{title}" }
                     }
                     span {

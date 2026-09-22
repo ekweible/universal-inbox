@@ -35,7 +35,7 @@ pub fn NavBarLayout() -> Element {
 
     rsx! {
         div {
-            class: "flex flex-col h-dvh overflow-hidden",
+            class: "flex flex-col h-dvh overflow-hidden bg-ui-surface pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]",
             a {
                 class: "skip-link",
                 href: "#main-content",
@@ -80,7 +80,7 @@ pub fn NavBarLayout() -> Element {
                         button {
                             // Hamburger: utility-only. No `::before`
                             // decoration so safe to drop the class hook.
-                            class: "w-10 h-10 inline-flex items-center justify-center bg-transparent border-0 rounded-ui-sm text-ui-base-content cursor-pointer hover:bg-ui-surface-hover",
+                            class: "w-11 h-11 inline-flex items-center justify-center bg-transparent border-0 rounded-ui-sm text-ui-base-content cursor-pointer hover:bg-ui-surface-hover",
                             "aria-label": "Open navigation",
                             "aria-expanded": "{*IS_SIDEBAR_DRAWER_OPEN.read()}",
                             onclick: move |_| {
@@ -94,7 +94,7 @@ pub fn NavBarLayout() -> Element {
                     }
                     main {
                         id: "main-content",
-                        class: "flex-1 overflow-hidden flex flex-col",
+                        class: "flex-1 min-h-0 overflow-hidden flex flex-col",
                         role: "main",
                         Outlet::<Route> {}
                     }
