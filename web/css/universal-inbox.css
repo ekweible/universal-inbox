@@ -2067,6 +2067,9 @@ span.flatpickr-weekday,
         align-items: flex-start;
     }
     /* Visible labels for reused icon buttons, including disabled actions. */
+    .mobile-more-actions :is(.tooltip, .tooltip-toggle) {
+        width: 100%;
+    }
     .mobile-more-actions button[aria-label] {
         width: 100%;
         justify-content: flex-start;

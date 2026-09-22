@@ -591,7 +591,7 @@ fn get_notification_actions(
                         disabled_label: (!context().is_task_actions_enabled)
                             .then_some("No task management service connected".to_string()),
                         show_shortcut,
-                        data_overlay: "#task-planning-modal",
+                        onclick: move |_| crate::services::flyonui::open_flyonui_modal("#task-planning-modal"),
                         icon_class: "icon-[lucide--list-plus]"
                     }
                 },
@@ -620,7 +620,7 @@ fn get_notification_actions(
                         disabled_label: (!context().is_task_actions_enabled)
                             .then_some("No task management service connected".to_string()),
                         show_shortcut,
-                        data_overlay: "#task-linking-modal",
+                        onclick: move |_| crate::services::flyonui::open_flyonui_modal("#task-linking-modal"),
                         icon_class: "icon-[lucide--link]"
                     }
                 },
@@ -692,7 +692,7 @@ fn get_notification_actions(
                         disabled_label: (!context().is_task_actions_enabled)
                             .then_some("No task management service connected".to_string()),
                         show_shortcut,
-                        data_overlay: "#task-planning-modal",
+                        onclick: move |_| crate::services::flyonui::open_flyonui_modal("#task-planning-modal"),
                         icon_class: "icon-[lucide--calendar-check]"
                     }
                 },

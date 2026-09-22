@@ -296,7 +296,7 @@ pub fn Sidebar() -> Element {
                 }
             }
 
-            div { class: "hidden max-md:flex flex-col gap-3 p-3 border-t border-sidebar-border",
+            div { class: "hidden max-md:flex flex-col gap-3 p-3 border-t border-sidebar-border [&>div]:flex-wrap [&_.footer-integration]:min-h-11 [&_.footer-integration]:min-w-11 [&_.footer-integration]:justify-center",
                 Link { to: Route::SettingsPage {}, class: "text-xs text-sidebar-text-muted", "Integration status" }
                 if let (Some(connections), Some(config)) = (INTEGRATION_CONNECTIONS(), APP_CONFIG()) {
                     IntegrationConnectionsStatus {
